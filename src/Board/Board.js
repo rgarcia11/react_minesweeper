@@ -5,7 +5,9 @@ const board = ( props ) => props.rows.map( ( row, index ) => {
     return <div>
             <Tiles
             tiles={row}
-            key={index} />
+            key={index} 
+            tileClick={props.tileClick}
+            row={index}/>
            </div>
 });
 
