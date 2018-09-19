@@ -12,13 +12,34 @@ class App extends Component {
       [{value: 0, show: 0, mine: 0}, {value: 0, show: 0, mine: 0}, {value: 0, show: 0, mine: 0}, {value: 0, show: 0, mine: 0}, {value: 0, show: 0, mine: 0}],
       [{value: 0, show: 0, mine: 0}, {value: 0, show: 0, mine: 0}, {value: 0, show: 0, mine: 0}, {value: 0, show: 0, mine: 0}, {value: 0, show: 0, mine: 0}]
     ],
-    numberOfMines: 10
+    numberOfMines: 10,
+    rows: 5,
+    columns: 5
   };
+
+  updateValues = ( xcoord, ycoord ) => {
+    const currentBoard = this.state.board;
+    currentBoard[xcoord][ycoord].mine = 1;
+    currentBoard[xcoord][ycoord-1].value += 1;
+    currentBoard[xcoord][ycoord+1].value += 1;
+    currentBoard[xcoord+1][ycoord].value += 1;
+    currentBoard[xcoord+1][ycoord+1].value += 1;
+    currentBoard[xcoord+1][ycoord-1].value += 1;
+    currentBoard[xcoord-1][ycoord].value += 1; 
+    currentBoard[xcoord-1][ycoord+1].value += 1;
+    currentBoard[xcoord-1][ycoord-1].value += 1;
+    this.setState( { board: currentBoard } );
+  }
+
+  randomXY = () => {
+    const xcoord = Math.round(Math.random()*(this.state.rows-1))
+    const ycoord = Math.round(Math.random()*(this.state.columns-1))
+    return { xcoord: xcoord, ycoord: ycoord };
+  }
 
   mineRandomizer = ( minesToPlace ) => minesToPlace.map( (mine) => {
     const coords = this.randomXY();
-    // set board position to mine: 1
-    // set neighbouring tiles to +1 on their value
+    this.updateValues(coords.xcoord, coords.ycoord);
   } ); 
 
   placeMines = ( numberOfMines ) => {
