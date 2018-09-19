@@ -39,8 +39,8 @@ class App extends Component {
   }
   
   updateValues = ( row, col ) => {
-    const currentBoard = this.state.board;
-    const currentMineLocations = this.state.mineLocations;
+    const currentBoard = [...this.state.board];
+    const currentMineLocations = [...this.state.mineLocations];
 
     const indexesToUpdate = this.offset(row, col);
     indexesToUpdate.map(index => currentBoard[index.row][index.col].value += 1);
@@ -48,7 +48,6 @@ class App extends Component {
     currentMineLocations.push( { row: row, col: col } );
     
     this.setState( { board: currentBoard, mineLocations: currentMineLocations } );
-    console.log("UPDATED!!!");
   }
 
   randomXY = () => {
