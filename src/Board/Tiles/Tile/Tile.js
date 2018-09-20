@@ -17,7 +17,7 @@ class Tile extends React.Component {
       };
       let text = ' ';
       if ( this.props.tile.show ) {
-        if ( this.props.tile.value != 0 ) {
+        if ( this.props.tile.value !== 0 ) {
           text = this.props.tile.value;
         }
         style = {

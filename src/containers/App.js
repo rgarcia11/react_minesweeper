@@ -5,21 +5,23 @@ import Board from '../Board/Board';
 class App extends Component {
   
   state = {
-    board: [
-      [{value: 0, show: 0, mine: 0}, {value: 0, show: 0, mine: 0}, {value: 0, show: 0, mine: 0}, {value: 0, show: 0, mine: 0}, {value: 0, show: 0, mine: 0}],
-      [{value: 0, show: 0, mine: 0}, {value: 0, show: 0, mine: 0}, {value: 0, show: 0, mine: 0}, {value: 0, show: 0, mine: 0}, {value: 0, show: 0, mine: 0}],
-      [{value: 0, show: 0, mine: 0}, {value: 0, show: 0, mine: 0}, {value: 0, show: 0, mine: 0}, {value: 0, show: 0, mine: 0}, {value: 0, show: 0, mine: 0}],
-      [{value: 0, show: 0, mine: 0}, {value: 0, show: 0, mine: 0}, {value: 0, show: 0, mine: 0}, {value: 0, show: 0, mine: 0}, {value: 0, show: 0, mine: 0}],
-      [{value: 0, show: 0, mine: 0}, {value: 0, show: 0, mine: 0}, {value: 0, show: 0, mine: 0}, {value: 0, show: 0, mine: 0}, {value: 0, show: 0, mine: 0}]
-    ],
+    board: [],
     numberOfMines: 10,
-    mineLocations: [],
-    rows: 5,
-    columns: 5
+    rows: 8,
+    columns: 12
   };
+  
+  tileInBoard = ( currentRow, currentCol ) => {
+    return currentRow < this.state.rows && currentRow >= 0 && currentCol < this.state.columns && currentCol >= 0;
+  }
 
   updatableTile = ( row, col, currentRow, currentCol ) => {
-    return (!(currentRow === row && currentCol === col)) && currentRow < this.state.rows && currentRow >= 0 && currentCol < this.state.columns && currentCol >= 0;
+    return (!(currentRow === row && currentCol === col)) && this.tileInBoard(currentRow, currentCol);
+  }
+
+  virginMine = ( row, col ) => {
+    const tile = {...this.state.board[row][col]};
+    return ((tile.value === 0) && (tile.mine === 0));
   }
 
   offset = ( row, col ) => {
@@ -40,49 +42,93 @@ class App extends Component {
   
   updateValues = ( row, col ) => {
     const currentBoard = [...this.state.board];
-    const currentMineLocations = [...this.state.mineLocations];
 
     const indexesToUpdate = this.offset(row, col);
     indexesToUpdate.map(index => currentBoard[index.row][index.col].value += 1);
     currentBoard[row][col].mine = 1;
-    currentMineLocations.push( { row: row, col: col } );
     
-    this.setState( { board: currentBoard, mineLocations: currentMineLocations } );
+    this.setState( { board: currentBoard } );
   }
 
-  randomXY = () => {
-    let mineIsUnique = false;
-    let row = 0;
-    let col = 0;
-    while ( mineIsUnique === false ) {
-      row = Math.round(Math.random()*(this.state.rows-1))
-      col = Math.round(Math.random()*(this.state.columns-1))
-      mineIsUnique = true;
-      this.state.mineLocations.map( location => {
-        if ( location.row === row && location.col === col ) {
+  randomXY = (numberOfMines) => {
+    let currentMine = 0;
+    const newMineLocations = [];
+    const currentBoard = [...this.state.board];
+    while ( currentMine < numberOfMines ) {
+      let mineIsUnique = false;
+      let row = 0;
+      let col = 0;
+      while ( mineIsUnique === false ) {
+        row = Math.round(Math.random()*(this.state.rows-1))
+        col = Math.round(Math.random()*(this.state.columns-1))
+        mineIsUnique = true;
+        if ( currentBoard[row][col].mine !== 0 ) {
           mineIsUnique = false;
         }
-      })
+      }
+      newMineLocations.push( { row: row, col: col } );
+      currentBoard[row][col].mine = 1;
+      currentMine += 1;
     }
-    return { row: row, col: col };
+    this.setState( { board: currentBoard } );
+    return newMineLocations;
   }
 
   placeMines = ( numberOfMines ) => {
-    console.log(`placing ${numberOfMines} mines`);
     let currentMine = 0;
-    while ( currentMine < numberOfMines ) {
-      const coords = this.randomXY();
-      console.log(`The mine to place has coords: ${coords.row} and ${coords.col}`);
+    const mineLocations = this.randomXY(numberOfMines);
+    mineLocations.map( ( coords ) => {
       this.updateValues(coords.row, coords.col);
-      currentMine += 1;
-    }
+    });
+    
   }
 
-  clickHandler = ( row, column ) => {
-    const currentBoard = [...this.state.board];
-    currentBoard[row][column].show = 1;
+  createBoard = () => {
+    const newBoard = [];
+    let currentRow = 0;
+    while ( currentRow < this.state.rows ) {
+      let currentColumn = 0;
+      const newRow = [];
+      while ( currentColumn < this.state.columns ) {
+        const newTile = { value: 0, show: 0, mine: 0 };
+        newRow.push( newTile );
+        currentColumn += 1;
+      }
+      newBoard.push( newRow );
+      currentRow += 1;
+    }
+    this.setState( {board: newBoard } )
+    //this.placeMines(this.state.numberOfMines);
+  }
+
+  discover = ( row, col, board ) => {
+    console.log(board);
+    const indexesToUpdate = this.offset(row, col);
+    const coordsToClick = [];
+    indexesToUpdate.map( (index) => {
+      board[index.row][index.col].show = 1;
+      if ( board[index.row][index.col].mine === 0 && board[index.row][index.col].show === 0 ) {
+        coordsToClick.push(index);
+      }
+      //if ( this.virginMine(index.row, index.col) && board[index.row][index.col].show === 0 ) {
+      //  board[index.row][index.col].show = 1;
+      //  board = this.discover(index.row, index.col, board);
+      //}
+    });
+    coordsToClick.map( (index) => {
+      board = this.discover(index.row, index.col, board);
+    });
+
+    return board;
+  }
+
+  clickHandler = ( row, col ) => {
+    let currentBoard = [...this.state.board];
+    currentBoard[row][col].show = 1;
+    if (this.virginMine(row, col) ) {
+      currentBoard = this.discover( row, col, currentBoard );
+    }
     this.setState( { board: currentBoard } );
-    console.log(this.state.board);
   }
 
   render() {
@@ -94,7 +140,9 @@ class App extends Component {
           key="board"
           tileClick={this.clickHandler}/>
         <button
-          onClick={this.placeMines.bind(this, 1)}>Mine it! </button>
+          onClick={this.createBoard.bind(this)}>Erase!</button>
+        <button
+          onClick={this.placeMines.bind(this, 10)}>Mine it!</button>
       </div>
     );
   }
