@@ -20,7 +20,7 @@ class App extends Component {
   }
 
   virginMine = ( row, col ) => {
-    const tile = {...this.state.board[row][col]};
+    const tile = this.state.board[row][col];
     return ((tile.value === 0) && (tile.mine === 0));
   }
 
@@ -98,22 +98,16 @@ class App extends Component {
       currentRow += 1;
     }
     this.setState( {board: newBoard } )
-    //this.placeMines(this.state.numberOfMines);
   }
 
   discover = ( row, col, board ) => {
-    console.log(board);
     const indexesToUpdate = this.offset(row, col);
     const coordsToClick = [];
     indexesToUpdate.map( (index) => {
-      board[index.row][index.col].show = 1;
-      if ( board[index.row][index.col].mine === 0 && board[index.row][index.col].show === 0 ) {
+      if ( this.virginMine(index.row, index.col) && board[index.row][index.col].show === 0 ) {
         coordsToClick.push(index);
       }
-      //if ( this.virginMine(index.row, index.col) && board[index.row][index.col].show === 0 ) {
-      //  board[index.row][index.col].show = 1;
-      //  board = this.discover(index.row, index.col, board);
-      //}
+      board[index.row][index.col].show = 1;
     });
     coordsToClick.map( (index) => {
       board = this.discover(index.row, index.col, board);
@@ -122,11 +116,24 @@ class App extends Component {
     return board;
   }
 
+  showAllTiles = () => {
+    const currentBoard = [...this.state.board];
+    currentBoard.map( (currentRow) => {
+      currentRow.map( (currentTile) => {
+        currentTile.show = 1;
+      })
+    });
+    return currentBoard;
+  }
+
   clickHandler = ( row, col ) => {
     let currentBoard = [...this.state.board];
     currentBoard[row][col].show = 1;
-    if (this.virginMine(row, col) ) {
+    if ( this.virginMine(row, col) ) {
       currentBoard = this.discover( row, col, currentBoard );
+    }
+    if ( currentBoard[row][col].mine !== 0 ) {
+      currentBoard = this.showAllTiles();
     }
     this.setState( { board: currentBoard } );
   }

@@ -2,7 +2,10 @@
   "name": "buscaminas",
   "version": "0.1.0",
   "private": true,
+  "homepage": "https://rgarcia11.github.io/react_minesweeper/",
   "dependencies": {
+    "gh-pages": "^2.0.0",
+    "package": "^1.0.1",
     "react": "^16.5.1",
     "react-dom": "^16.5.1",
     "react-scripts": "1.1.5",
@@ -12,6 +15,8 @@
     "start": "react-scripts start",
     "build": "react-scripts build",
     "test": "react-scripts test --env=jsdom",
+    "predeploy": "npm run build",
+    "deploy": "master -d build",
     "eject": "react-scripts eject"
   }
 }
